@@ -11,7 +11,7 @@ env:
   REMOTE_BRANCH: main
   CONFIG_FILE: ax3600.config
   PROFILE_NAME: xiaomi_ax3600
-  NSS_STATUS_PATCH: 999-add-dynamic-vlan-ath11k.patch
+  ATH11K_PATCH: 999-add-dynamic-vlan-ath11k.patch
   RELEASE_PREFIX: qualcommax-6.x-wifi
 
 jobs:
@@ -61,9 +61,12 @@ jobs:
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+      - name: Add ath11k dynamic vlan patch
+        run: |
+          mv custom_repo/patches/${{ env.ATH11K_PATCH }} package/kernel/mac80211/patches/ath11k/${{ env.ATH11K_PATCH }}
       - name: Configure firmware image
         run: |
-          make image PROFILE="${{ env.PROFILE_NAME }}" PACKAGES="ath10k-firmware-qca9887-ct ath11k-firmware-ipq8074 base-files busybox ca-bundle dnsmasq dropbear e2fsprogs firewall4 fstools ipq-wifi-xiaomi_ax3600 kmod-ath10k-ct-smallbuffers kmod-ath11k-ahb kmod-fs-ext4 kmod-gpio-button-hotplug kmod-leds-gpio kmod-nft-offload kmod-phy-aquantia kmod-qca-nss-dp kmod-usb-dwc3 kmod-usb-dwc3-qcom kmod-usb3 libc libgcc libustream-mbedtls logd losetup luci mtd netifd nftables odhcp6c odhcpd-ipv6only opkg ppp ppp-mod-pppoe procd procd-seccomp procd-ujail uboot-envtools uci uclient-fetch urandom-seed urngd wpad-mbedtls ip-full ip-bridge luci-ssl openssh-client nano tcpdump" -j$(nproc)
+          make image PROFILE="${{ env.PROFILE_NAME }}" -j$(nproc)
       - name: Build the firmware image
         run: make download world V=sc -j$(nproc)
       - name: Package output
