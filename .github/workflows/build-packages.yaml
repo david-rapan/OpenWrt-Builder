@@ -46,7 +46,7 @@ jobs:
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.tag }}
           FEEDNAME: packages_ci
-          PACKAGES: curl
+          PACKAGES: openssl curl
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: false
           V: sc
