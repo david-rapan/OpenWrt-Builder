@@ -42,13 +42,14 @@ jobs:
           rm -rf openwrt
 
       - name: Build Packages
-        uses: sbwml/openwrt-gh-action-sdk@curl
+        uses: openwrt/gh-action-sdk@curl
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.tag }}
           FEEDNAME: packages_ci
           PACKAGES: curl
           NO_REFRESH_CHECK: true
           IGNORE_ERRORS: false
+          V: sc
 
       - name: Create compress files
         run: |
