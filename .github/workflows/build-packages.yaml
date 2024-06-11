@@ -1,0 +1,65 @@
+name: Build Packages
+
+on:
+  watch:
+    types: started
+  repository_dispatch:
+    types: build
+
+jobs:
+  build:
+    if: github.event.repository.owner.id == github.event.sender.id
+    name: Build ${{ matrix.arch }}-${{ matrix.tag }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - aarch64_cortex-a53
+        tag:
+          - main
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Source
+        run: |
+          # curl
+          git clone https://github.com/openwrt/packages -b main --depth=1
+          mv packages/net/curl curl
+          rm -rf packages
+          # switch to openssl
+          sed -i 's/default LIBCURL_MBEDTLS/default LIBCURL_OPENSSL/g' curl/Config.in
+          # version
+          curl_version=$(grep -Po '(?<=PKG_VERSION:=).*' curl/Makefile)
+          echo "curl_version=$curl_version" >> "$GITHUB_ENV"
+          # openssl quic
+          git clone https://github.com/david-rapan/openwrt -b main --depth=1
+          cp -a openwrt/package/libs/openssl openssl
+          rm -rf openwrt
+
+      - name: Build Packages
+        uses: sbwml/openwrt-gh-action-sdk@curl
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.tag }}
+          FEEDNAME: packages_ci
+          PACKAGES: curl
+          NO_REFRESH_CHECK: true
+          IGNORE_ERRORS: false
+
+      - name: Create compress files
+        run: |
+          tar -zcvf curl-${{ env.curl_version }}-${{ matrix.arch }}.tar.gz -C bin/packages/${{ matrix.arch }}/ packages_ci
+
+      - name: Release packages
+        uses: ncipollo/release-action@v1
+        with:
+          name: curl-${{ env.curl_version }}
+          commit: main
+          tag: ${{ env.curl_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "curl-${{ env.curl_version }}-${{ matrix.arch }}.tar.gz"
