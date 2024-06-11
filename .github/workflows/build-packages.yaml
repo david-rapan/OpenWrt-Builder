@@ -42,7 +42,7 @@ jobs:
           rm -rf openwrt
 
       - name: Build Packages
-        uses: openwrt/gh-action-sdk@curl
+        uses: david-rapan/gh-action-sdk@main
         env:
           ARCH: ${{ matrix.arch }}-${{ matrix.tag }}
           FEEDNAME: packages_ci
