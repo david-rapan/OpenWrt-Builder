@@ -8,8 +8,8 @@ on:
 
 env:
   REMOTE_REPOSITORY: david-rapan/openwrt
-  REMOTE_BRANCH: openssl-3.1.5+quic
-  REMOTE_BRANCH_ENCODED: openssl-3.1.5%2bquic
+  REMOTE_BRANCH: openssl-3.0.13+quic
+  REMOTE_BRANCH_ENCODED: openssl-3.0.13%2bquic
   CONFIG_FILE: ax3600.config
   PROFILE_NAME: xiaomi_ax3600
   RELEASE_PREFIX: qualcommax-6.x-wifi
