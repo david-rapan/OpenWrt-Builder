@@ -59,7 +59,7 @@ jobs:
       - name: Update and install feeds
         run: |
           ./scripts/feeds update -a
-          sed -i 's/+LIBCURL_OPENSSL:libopenssl/+LIBCURL_OPENSSL:libopenssl --with-openssl-quic/g' package/feeds/net/curl/Makefile
+          sed -i 's/+LIBCURL_OPENSSL:libopenssl/+LIBCURL_OPENSSL:libopenssl --with-openssl-quic/g' feeds/packages/net/curl/Makefile
           ./scripts/feeds install -a
       - name: Configure firmware image
         run: |
