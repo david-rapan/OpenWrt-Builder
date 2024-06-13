@@ -9,3 +9,13 @@
      ]],[[
        OSSL_QUIC_client_method();
      ]])
+--- a/lib/vtls/openssl.c
++++ b/lib/vtls/openssl.c
+@@ -65,6 +65,7 @@
+ #include "curl_printf.h"
+
+ #include <openssl/ssl.h>
++#include <openssl/quic.h>
+ #include <openssl/rand.h>
+ #include <openssl/x509v3.h>
+ #ifndef OPENSSL_NO_DSA
