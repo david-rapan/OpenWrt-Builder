@@ -5,7 +5,7 @@
          return;
 
 -    for (j = s->monitor->interfaces; j; j = j->interface_next)
-+    if (r->key->type == 47) # NSEC
++    if (r->key->type == 47)
 +        return;
 +
 +    for (j = s->monitor->interfaces; j; j = j->interface_next)
