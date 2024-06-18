@@ -11,7 +11,7 @@
 +        if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
 +            AvahiStringList *l;
 +
-+            isfilterenabled = 1
++            isfilterenabled = 1;
 +
 +            for (l = s->config.reflect_filters; l; l = l->next) {
 +                if (strstr(record->key->name, (char*) l->text) == NULL) {
