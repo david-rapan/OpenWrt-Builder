@@ -1,0 +1,25 @@
+--- a/avahi-core/server.c
++++ b/avahi-core/server.c
+@@ -640,9 +640,19 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+             }
+
+             if (!avahi_key_is_pattern(record->key)) {
+-                if (!from_local_iface)
+-                    reflect_probe(s, i, record);
+-                incoming_probe(s, record, i);
++                if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
++                    for (l = s->config.reflect_filters; l; l = l->next) {
++                        char* match = strstr(record->key->name, (char*) l->text);
++                        if (match == NULL) {
++                            reflect_probe(s, i, record);
++                        }
++                        else {
++                            avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, record->key->name, from_local_iface);
++                        }
++                    }
++                }
++
++                incoming_probe(s, record, i);
+             }
+
+             avahi_record_unref(record);
