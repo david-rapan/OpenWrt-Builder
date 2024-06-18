@@ -1,19 +1,23 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -571,7 +571,17 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+@@ -571,7 +571,21 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
          }
 
          if (!legacy_unicast && !from_local_iface) {
 -            reflect_query(s, i, key);
 +            if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
++                int found = 0;
 +                for (l = s->config.reflect_filters; l; l = l->next) {
 +                    char* match = strstr(key->name, (char*) l->text);
-+                    if (match == NULL) {
-+                        reflect_query(s, i, key);
-+                    }
-+                    else {
++                    if (match != NULL) {
++                        found = 1;
 +                        avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, key->name, from_local_iface);
++                        break;
 +                    }
++                }
++
++                if (!found) {
++                    reflect_query(s, i, key);
 +                }
 +            }
              if (!unicast_response)
