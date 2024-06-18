@@ -1,6 +1,6 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -571,7 +571,18 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+@@ -571,7 +571,17 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
          }
 
          if (!legacy_unicast && !from_local_iface) {
