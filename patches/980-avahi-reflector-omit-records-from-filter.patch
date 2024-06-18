@@ -1,5 +1,48 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
+@@ -571,7 +571,18 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+         }
+
+         if (!legacy_unicast && !from_local_iface) {
+-            reflect_query(s, i, key);
++            if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
++                for (l = s->config.reflect_filters; l; l = l->next) {
++                    char* match = strstr(key->name, (char*) l->text);
++                    if (match == NULL) {
++                        reflect_query(s, i, key);
++                    }
++                    else {
++                        avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, key->name, from_local_iface);
++                    }
++                }
++            }
+             if (!unicast_response)
+               avahi_cache_start_poof(i->cache, key, a);
+         }
+--- a/avahi-core/server.c
++++ b/avahi-core/server.c
+@@ -640,8 +640,11 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+             }
+
+             if (!avahi_key_is_pattern(record->key)) {
+-                if (!from_local_iface)
+-                    reflect_probe(s, i, record);
++                if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
++                    for (l = s->config.reflect_filters; l; l = l->next) {
++                        char* match = strstr(record->key->name, (char*) l->text);
++                        if (match == NULL) {
++                            reflect_probe(s, i, record);
++                        }
++                        else {
++                            avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, record->key->name, from_local_iface);
++                        }
++                    }
++                }
+                 incoming_probe(s, record, i);
+             }
+
+--- a/avahi-core/server.c
++++ b/avahi-core/server.c
 @@ -658,11 +658,28 @@ static void handle_response_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, int from_local_iface) {
              break;
          }
@@ -12,7 +55,7 @@
 +
 +        int isfilterenabled = 0;
 +
-+        if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
++        if (!avahi_key_is_pattern(record->key) && !from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
 +            AvahiStringList *l;
 +
 +            isfilterenabled = 1;
