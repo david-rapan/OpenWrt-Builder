@@ -1,32 +1,55 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -571,9 +571,26 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
-         }
+@@ -571,20 +571,38 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+            goto fail;
+        }
 
-         if (!legacy_unicast && !from_local_iface) {
+-        if (!legacy_unicast && !from_local_iface) {
 -            reflect_query(s, i, key);
 -            if (!unicast_response)
 -              avahi_cache_start_poof(i->cache, key, a);
-+            int found = 0;
+-        }
+-
+-        if (avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ANCOUNT) == 0 &&
+-            !(avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_FLAGS) & AVAHI_DNS_FLAG_TC))
+-            /* Allow our own queries to be suppressed by incoming
+-             * queries only when they do not include known answers */
+-            avahi_query_scheduler_incoming(i->query_scheduler, key);
+-
+-        avahi_server_prepare_matching_responses(s, i, key, unicast_response);
+-        avahi_key_unref(key);
++        int found = 0;
 +
-+            if (s->config.enable_reflector && s->config.reflect_filters != NULL) {
-+                avahi_log_debug("Reflector [%s] iface [%d]", key->name, from_local_iface);
++        if (s->config.enable_reflector && s->config.reflect_filters != NULL) {
++            avahi_log_debug("Reflector [%s] iface [%d]", key->name, from_local_iface);
 +
-+                for (l = s->config.reflect_filters; l; l = l->next) {
-+                    char* match = strstr(key->name, (char*) l->text);
-+                    if (match != NULL) {
-+                        found = 1;
-+                        avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, key->name, from_local_iface);
-+                        break;
-+                    }
++            for (l = s->config.reflect_filters; l; l = l->next) {
++                char* match = strstr(key->name, (char*) l->text);
++                if (match != NULL) {
++                    found = 1;
++                    avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, key->name, from_local_iface);
++                    break;
 +                }
 +            }
++        }
 +
-+            if (!found) {
++        if (!found) {
++            if (!legacy_unicast && !from_local_iface) {
 +                reflect_query(s, i, key);
 +                if (!unicast_response)
 +                    avahi_cache_start_poof(i->cache, key, a);
 +            }
-        }
++
++            if (avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ANCOUNT) == 0 &&
++                !(avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_FLAGS) & AVAHI_DNS_FLAG_TC))
++                /* Allow our own queries to be suppressed by incoming
++                 * queries only when they do not include known answers */
++                avahi_query_scheduler_incoming(i->query_scheduler, key);
++
++            avahi_server_prepare_matching_responses(s, i, key, unicast_response);
++        }
++
++        avahi_key_unref(key);
+     }
 
-        if (avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ANCOUNT) == 0 &&
+     if (!legacy_unicast) {
