@@ -1,6 +1,6 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -571,20 +571,38 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+@@ -571,20 +571,40 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
             goto fail;
         }
 
@@ -21,6 +21,8 @@
 +        int found = 0;
 +
 +        if (s->config.enable_reflector && s->config.reflect_filters != NULL) {
++            AvahiStringList *l;
++
 +            avahi_log_debug("Reflector [%s] iface [%d]", key->name, from_local_iface);
 +
 +            for (l = s->config.reflect_filters; l; l = l->next) {
