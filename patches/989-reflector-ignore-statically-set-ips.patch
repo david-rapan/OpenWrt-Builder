@@ -1,0 +1,53 @@
+--- a/avahi-core/server.c
++++ b/avahi-core/server.c
+@@ -1089,13 +1089,44 @@ static void mcast_socket_event(AvahiWatch *w, int fd, AvahiWatchEvent events, void *userdata) {
+     }
+
+     if (p) {
+-        if (iface == AVAHI_IF_UNSPEC)
+-            iface = avahi_find_interface_for_address(s->monitor, &dest);
+-
+-        if (iface != AVAHI_IF_UNSPEC)
+-            dispatch_packet(s, p, &src, port, &dest, iface, ttl);
+-        else
+-            avahi_log_error("Incoming packet received on address that isn't local.");
++
++        int match = 0;
++        AvahiAddress a;
++        if (src.proto == AVAHI_PROTO_INET) {
++            avahi_address_parse("192.168.144.208", AVAHI_PROTO_INET, &a);
++            if (avahi_address_cmp(&a, &src.data.ipv4) != 0)
++            {
++                avahi_address_parse("192.168.180.208", AVAHI_PROTO_INET, &a);
++                if (avahi_address_cmp(&a, &src.data.ipv4) != 0)
++                {
++                    avahi_address_parse("192.168.216.208", AVAHI_PROTO_INET, &a);
++                    if (avahi_address_cmp(&a, &src.data.ipv4) == 0)
++                        match = 1;
++                }
++                else
++                    match = 1;
++            }
++            else
++                match = 1;
++        }
++        else
++        {
++            avahi_address_parse("fe80::5054:ff:fe12:3456", AVAHI_PROTO_INET6, &a);
++            if (avahi_address_cmp(&a, &src.data.ipv6) == 0)
++            {
++                match = 1;
++            }
++        }
++
++        if (!match)
++            if (iface == AVAHI_IF_UNSPEC)
++                iface = avahi_find_interface_for_address(s->monitor, &dest);
++
++            if (iface != AVAHI_IF_UNSPEC)
++                dispatch_packet(s, p, &src, port, &dest, iface, ttl);
++            else
++                avahi_log_error("Incoming packet received on address that isn't local.");
++        }
+
+         avahi_dns_packet_free(p);
