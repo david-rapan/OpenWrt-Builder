@@ -1,6 +1,6 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -676,11 +676,28 @@ static void handle_response_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, int from_local_iface) {
+@@ -676,11 +676,47 @@ static void handle_response_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, int from_local_iface) {
              break;
          }
 
@@ -18,10 +18,19 @@
 +            isfilterenabled = 1;
 +
 +            for (l = s->config.reflect_filters; l; l = l->next) {
-+                char* match = strstr(record->key->name, (char*) l->text);
-+                if (match != NULL) {
-+                    avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, record->key->name, from_local_iface);
-+                    goto unref;
++                if (record->key->type == AVAHI_DNS_TYPE_PTR) {
++                    char* match = strstr(record->data.ptr.name, (char*) l->text);
++                    if (match != NULL) {
++                        avahi_log_debug("Reject Ptr SRC [%s] - [%s] iface [%d]", match, record->data.ptr.name, from_local_iface);
++                        goto unref;
++                    }
++                }
++                else if (record->key->type == AVAHI_DNS_TYPE_SRV || record->key->type == AVAHI_DNS_TYPE_TXT) {
++                    char* match = strstr(record->key->name, (char*) l->text);
++                    if (match != NULL) {
++                        avahi_log_debug("Reject Key match [%s] - [%s] iface [%d]", match, record->key->name, from_local_iface);
++                        goto unref;
++                    }
 +                }
 +            }
 +        }
