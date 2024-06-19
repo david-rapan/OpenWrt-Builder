@@ -1,0 +1,32 @@
+--- a/avahi-core/server.c
++++ b/avahi-core/server.c
+@@ -622,9 +622,26 @@ static void handle_query_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInterface *i, const AvahiAddress *a, uint16_t port, int legacy_unicast, int from_local_iface) {
+                 goto fail;
+             }
+
+-            avahi_response_scheduler_suppress(i->response_scheduler, record, a);
+-            avahi_record_list_drop(s->record_list, record);
+-            avahi_cache_stop_poof(i->cache, record, a);
++            int found = 0;
++                
++            if (s->config.enable_reflector && s->config.reflect_filters != NULL) {
++                avahi_log_debug("Reflector [%s] iface [%d]", record->key->name, from_local_iface);
++
++                for (l = s->config.reflect_filters; l; l = l->next) {
++                    char* match = strstr(record->key->name, (char*) l->text);
++                    if (match != NULL) {
++                        found = 1;
++                        avahi_log_debug("Reject match [%s] - [%s] iface [%d]", match, record->key->name, from_local_iface);
++                        break;
++                    }
++                }
++            }
++
++            if (!found) {
++                avahi_response_scheduler_suppress(i->response_scheduler, record, a);
++                avahi_record_list_drop(s->record_list, record);
++                avahi_cache_stop_poof(i->cache, record, a);
++            }
+
+             avahi_record_unref(record);
+         }
