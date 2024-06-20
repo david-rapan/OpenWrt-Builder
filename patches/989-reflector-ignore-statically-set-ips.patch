@@ -15,14 +15,13 @@
 +        int match = 0;
 +        char a_s[AVAHI_ADDRESS_STR_MAX];
 +        AvahiAddress a;
-+        if (src.proto == AVAHI_PROTO_INET) {            
++        if (dest.proto == AVAHI_PROTO_INET) {
 +            avahi_address_parse("192.168.144.208", AVAHI_PROTO_INET, &a);
-+            avahi_log_debug("Incoming %s packet from %s, filter: %s", avahi_proto_to_string(src.proto), avahi_address_snprint(a_s, sizeof(a_s), &src.data.ipv4), avahi_address_snprint(a_s, sizeof(a_s), &a));
-+            if (avahi_address_cmp(&a, &src.data.ipv4) != 0) {
++            if (avahi_address_cmp(&a, &src) != 0) {
 +                avahi_address_parse("192.168.180.208", AVAHI_PROTO_INET, &a);
-+                if (avahi_address_cmp(&a, &src.data.ipv4) != 0) {
++                if (avahi_address_cmp(&a, &src) != 0) {
 +                    avahi_address_parse("192.168.216.208", AVAHI_PROTO_INET, &a);
-+                    if (avahi_address_cmp(&a, &src.data.ipv4) == 0)
++                    if (avahi_address_cmp(&a, &src) == 0)
 +                        match = 1;
 +                }
 +                else
@@ -33,11 +32,12 @@
 +        }
 +        else {
 +            avahi_address_parse("fe80::5054:ff:fe12:3456", AVAHI_PROTO_INET6, &a);
-+            avahi_log_debug("Incoming %s packet from %s, filter: %s", avahi_proto_to_string(src.proto), avahi_address_snprint(a_s, sizeof(a_s), &src.data.ipv6), avahi_address_snprint(a_s, sizeof(a_s), &a));
-+            if (avahi_address_cmp(&a, &src.data.ipv6) == 0) {
++            if (avahi_address_cmp(&a, &src) == 0) {
 +                match = 1;
 +            }
 +        }
++
++        avahi_log_debug("Incoming %s packet from %s", avahi_proto_to_string(dest.proto), avahi_address_snprint(a_s, sizeof(a_s), &src));
 +
 +        if (!match) {
 +            if (iface == AVAHI_IF_UNSPEC)
