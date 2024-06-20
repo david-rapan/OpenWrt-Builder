@@ -1,6 +1,6 @@
 --- a/avahi-core/server.c
 +++ b/avahi-core/server.c
-@@ -1089,13 +1089,47 @@ static void mcast_socket_event(AvahiWatch *w, int fd, AvahiWatchEvent events, void *userdata) {
+@@ -1089,13 +1089,45 @@ static void mcast_socket_event(AvahiWatch *w, int fd, AvahiWatchEvent events, void *userdata) {
      }
 
      if (p) {
@@ -16,7 +16,7 @@
 +        char* a_s;
 +        AvahiAddress a;
 +        if (src.proto == AVAHI_PROTO_INET) {
-+            avahi_address_snprint(a_s, address_get_size(&src.data.ipv4), &src.data.ipv4);
++            avahi_address_snprint(a_s, (size_t) 4, &src.data.ipv4);
 +            avahi_address_parse("192.168.144.208", AVAHI_PROTO_INET, &a);
 +            if (avahi_address_cmp(&a, &src.data.ipv4) != 0) {
 +                avahi_address_parse("192.168.180.208", AVAHI_PROTO_INET, &a);
@@ -31,12 +31,10 @@
 +            else
 +                match = 1;
 +        }
-+        else
-+        {
-+            avahi_address_snprint(a_s, address_get_size(&src.data.ipv6), &src.data.ipv4);
++        else {
++            avahi_address_snprint(a_s, (size_t) 4, &src.data.ipv4);
 +            avahi_address_parse("fe80::5054:ff:fe12:3456", AVAHI_PROTO_INET6, &a);
-+            if (avahi_address_cmp(&a, &src.data.ipv6) == 0)
-+            {
++            if (avahi_address_cmp(&a, &src.data.ipv6) == 0) {
 +                match = 1;
 +            }
 +        }
