@@ -39,7 +39,7 @@
 +            }
 +        }
 +
-+        avahi_log_debug("Incoming %s packet from %s", avahi_proto_to_string(src.proto), &a_s);
++        avahi_log_debug("Incoming %s packet from %s", avahi_proto_to_string(src.proto), a_s);
 +
 +        if (!match) {
 +            if (iface == AVAHI_IF_UNSPEC)
