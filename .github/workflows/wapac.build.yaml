@@ -1,4 +1,4 @@
-name: Build OpenWrt for specific target and release
+name: Build for wAP AC
 
 on:
   workflow_dispatch:
